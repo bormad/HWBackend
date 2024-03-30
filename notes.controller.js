@@ -18,13 +18,9 @@ async function addNote(title) {
 }
 
 async function getNotes() {
-  const notes = await fs.readFile(notesPath, { endcoding: "utf-8" });
+  const notes = await fs.readFile(notesPath, { encoding: "utf-8" });
   const parsedNotes = Array.isArray(JSON.parse(notes)) ? JSON.parse(notes) : [];
-
-  const formattedNotes = parsedNotes.map(
-    (note) => `${note.title} - ${note.id}`
-  );
-  return formattedNotes.join("\n");
+  return parsedNotes;
 }
 
 async function removeNote(currentNoteID) {
@@ -40,8 +36,22 @@ async function removeNote(currentNoteID) {
   }
 }
 
+async function patchNote(currentNoteID, updatedTitle) {
+  const notes = await getNotes();
+  const noteToPatch = notes.find(({ id }) => id === currentNoteID);
+
+  if (noteToPatch) {
+    noteToPatch.title = updatedTitle;
+    await fs.writeFile(notesPath, JSON.stringify(notes));
+    console.log(chalk.green.inverse("Note was Patched"));
+  } else {
+    console.log(chalk.red.inverse("Note with the specified ID was not found"));
+  }
+}
+
 module.exports = {
   addNote,
   getNotes,
   removeNote,
+  patchNote,
 };
